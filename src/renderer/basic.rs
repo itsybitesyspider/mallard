@@ -7,7 +7,7 @@ pub struct BasicRenderer {
     queue: wgpu::Queue,
 }
 
-pub trait LikeBasicRenderer : LikeHeadlessRenderer {
+pub trait LikeBasicRenderer: LikeHeadlessRenderer {
     fn surface(&self) -> &wgpu::Surface;
 }
 
@@ -22,37 +22,43 @@ impl LikeHeadlessRenderer for BasicRenderer {
 }
 
 impl<R> LikeBasicRenderer for &R
-where R: LikeBasicRenderer {
+where
+    R: LikeBasicRenderer,
+{
     fn surface(&self) -> &wgpu::Surface {
         (*self).surface()
-    }    
+    }
 }
 
 impl<R> LikeBasicRenderer for Arc<R>
-where R: LikeBasicRenderer {
+where
+    R: LikeBasicRenderer,
+{
     fn surface(&self) -> &wgpu::Surface {
         self.as_ref().surface()
-    }   
+    }
 }
 
 impl BasicRenderer {
     pub async unsafe fn new<W: raw_window_handle::HasRawWindowHandle>(w: W) -> Arc<Self> {
         let instance = wgpu::Instance::new(wgpu::BackendBit::PRIMARY);
         let surface = unsafe { instance.create_surface(&w) };
-        let adapter = instance.request_adapter(
-            &wgpu::RequestAdapterOptions {
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::Default,
                 compatible_surface: None,
-            },
-        ).await.unwrap();
-        let (device, queue) = adapter.request_device(&Default::default(), None).await.unwrap();
-        
-        Arc::new(
-            BasicRenderer {
-                surface,
-                device, 
-                queue
-            }
-        )
+            })
+            .await
+            .unwrap();
+        let (device, queue) = adapter
+            .request_device(&Default::default(), None)
+            .await
+            .unwrap();
+
+        Arc::new(BasicRenderer {
+            surface,
+            device,
+            queue,
+        })
     }
 }
