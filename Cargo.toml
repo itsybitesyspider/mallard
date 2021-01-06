@@ -1,0 +1,16 @@
+[package]
+name = "mallard"
+version = "0.1.0"
+authors = ["Christopher Lane Hinson <clanehin@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+raw-window-handle = "0.3"
+rand = "0.8"
+image = "0.23"
+shaderc = "0.6"
+cgmath = "0.17"
+wgpu = "0.6"
+futures = "0.3"
