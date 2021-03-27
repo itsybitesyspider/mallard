@@ -15,7 +15,7 @@ impl Drawable for UnlitTriangles<Position2d> {
         self.render_pipeline = Some(self.render_pipeline(render_pass.renderer, render_pass.render_target));
     }
 
-    fn draw_color<'pass, R: LikeHeadlessRenderer>(&'pass self, render_pass: &mut Rgba8ColorRenderPass<'pass,R>) {
+    fn render_color<'pass, R: LikeHeadlessRenderer>(&'pass self, render_pass: &mut Rgba8ColorRenderPass<'pass,R>) {
         if let Some(render_pipeline) = self.render_pipeline.as_ref() {
             render_pass.render_pass.set_pipeline(render_pipeline);
             render_pass.render_pass.draw(0..self.position.len() as u32, 0..1);
