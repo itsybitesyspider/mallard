@@ -11,5 +11,5 @@ async fn white_noise() {
         &renderer,
         (512, 512),
     ).await;
-    texture.save(renderer, "white-noise.png").await;
+    texture.save(&renderer, "white-noise.png").await;
 }

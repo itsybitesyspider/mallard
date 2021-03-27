@@ -6,7 +6,7 @@ pub struct Canvas {
 }
 
 impl Canvas {
-    pub fn new<R: LikeHeadlessRenderer>(renderer: R, size: (u32, u32)) -> Self {
+    pub fn new<R: LikeHeadlessRenderer>(renderer: &R, size: (u32, u32)) -> Self {
         println!("canvas: new");
         let final_tex = TextureRgba8Color::new(renderer, size);
 

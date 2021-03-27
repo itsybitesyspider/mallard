@@ -7,7 +7,7 @@ pub struct Rgba8Buffer {
 
 impl Rgba8Buffer {
     pub(crate) fn new_destination_for_image<R: LikeHeadlessRenderer>(
-        renderer: R,
+        renderer: &R,
         size: (u32, u32),
     ) -> Rgba8Buffer {
         let size = ((std::mem::size_of::<u32>() as u32) * size.0 * size.1) as wgpu::BufferAddress;
@@ -24,7 +24,7 @@ impl Rgba8Buffer {
     }
 
     pub(crate) fn new_source_for_image<R: LikeHeadlessRenderer>(
-        renderer: R,
+        renderer: &R,
         size: (u32, u32),
     ) -> Rgba8Buffer {
         let size = ((std::mem::size_of::<u32>() as u32) * size.0 * size.1) as wgpu::BufferAddress;

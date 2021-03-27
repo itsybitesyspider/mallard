@@ -6,7 +6,7 @@ pub struct TextureRgba8Color {
 }
 
 impl TextureRgba8Color {
-    pub fn new<R: LikeHeadlessRenderer>(renderer: R, size: (u32, u32)) -> Self {
+    pub fn new<R: LikeHeadlessRenderer>(renderer: &R, size: (u32, u32)) -> Self {
         println!("TextureRgba8Color: new");
         let desc = wgpu::TextureDescriptor {
             size: wgpu::Extent3d {
@@ -35,13 +35,13 @@ impl TextureRgba8Color {
         &self.tex
     }
 
-    pub fn draw<R: LikeHeadlessRenderer, D: Drawable>(&self, renderer: R, draw: D) {
+    pub fn draw<R: LikeHeadlessRenderer, D: Drawable>(&self, renderer: &R, draw: D) {
         draw.draw_color(renderer, self);
     }
 
     // TODO: this should be moved to a data texture type
     pub async fn new_from_white_noise<R: LikeHeadlessRenderer>(
-        renderer: R,
+        renderer: &R,
         size: (u32, u32),
     ) -> Self {
         use rand::Rng;
@@ -60,12 +60,12 @@ impl TextureRgba8Color {
 
     // TODO: this should be moved to a Texture type
     pub async fn new_from_rgba<R: LikeHeadlessRenderer>(
-        renderer: R,
+        renderer: &R,
         size: (u32, u32),
         data: &[u8],
     ) -> Self {
-        let result = Self::new(&renderer, size);
-        let source = Rgba8Buffer::new_source_for_image(&renderer, size);
+        let result = Self::new(renderer, size);
+        let source = Rgba8Buffer::new_source_for_image(renderer, size);
 
         {
             let slice = source.buf().slice(..);
@@ -104,9 +104,9 @@ impl TextureRgba8Color {
         result
     }
 
-    pub async fn to_rgba8<R: LikeHeadlessRenderer>(&self, renderer: R) -> Vec<u8> {
+    pub async fn to_rgba8<R: LikeHeadlessRenderer>(&self, renderer: &R) -> Vec<u8> {
         let destination = Rgba8Buffer::new_destination_for_image(
-            &renderer,
+            renderer,
             (self.desc.size.width, self.desc.size.height),
         );
 
@@ -144,8 +144,8 @@ impl TextureRgba8Color {
         result
     }
 
-    pub async fn save<R: LikeHeadlessRenderer>(&self, renderer: R, path: &str) {
-        let rgba_data = self.to_rgba8(&renderer).await;
+    pub async fn save<R: LikeHeadlessRenderer>(&self, renderer: &R, path: &str) {
+        let rgba_data = self.to_rgba8(renderer).await;
         image::save_buffer(path, &rgba_data, 512, 512, image::ColorType::Rgba8).unwrap();
     }
 }

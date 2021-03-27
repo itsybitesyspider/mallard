@@ -5,7 +5,7 @@ pub struct Clear {
 }
 
 impl Drawable for Clear {
-    fn draw_color<R: LikeHeadlessRenderer>(&self, renderer: R, render_target: &TextureRgba8Color) {
+    fn draw_color<R: LikeHeadlessRenderer>(&self, renderer: &R, render_target: &TextureRgba8Color) {
         let mut encoder =
             renderer
                 .device()

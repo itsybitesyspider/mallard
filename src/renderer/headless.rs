@@ -19,19 +19,6 @@ impl LikeHeadlessRenderer for HeadlessRenderer {
     }
 }
 
-impl<R> LikeHeadlessRenderer for &R
-where
-    R: LikeHeadlessRenderer,
-{
-    fn device(&self) -> &wgpu::Device {
-        (*self).device()
-    }
-
-    fn queue(&self) -> &wgpu::Queue {
-        (*self).queue()
-    }
-}
-
 impl<R> LikeHeadlessRenderer for Arc<R>
 where
     R: LikeHeadlessRenderer,
@@ -62,7 +49,7 @@ impl HeadlessRenderer {
                     limits: wgpu::Limits::default(),
                     shader_validation: true,
                 },
-                Some(&std::path::Path::new("~/wgpu_trace")),
+                None,
             )
             .await
             .unwrap();
