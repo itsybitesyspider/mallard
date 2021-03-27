@@ -1,3 +1,4 @@
 #!/usr/bin/env sh
 
-rm *.png
+rm -f orange.png
+rm -f white-noise.png

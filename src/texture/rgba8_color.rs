@@ -1,11 +1,25 @@
 use crate::{renderer::*, Drawable, Rgba8Buffer};
 
+/// An RGBA8 color texture.
 pub struct TextureRgba8Color {
     desc: wgpu::TextureDescriptor<'static>,
     tex: wgpu::Texture,
 }
 
+#[derive(Clone,Copy,Debug)]
+pub enum Rgba8ColorRenderPassOptions {
+    Clear([f64; 4]),
+    DontClear,
+}
+
+pub struct Rgba8ColorRenderPass<'a, R: LikeHeadlessRenderer> {
+    pub renderer: &'a R,
+    pub render_pass: wgpu::RenderPass<'a>,
+    pub render_target: &'a TextureRgba8Color,
+}
+
 impl TextureRgba8Color {
+    /// Construct a new RBGA8 color texture with the given size.
     pub fn new<R: LikeHeadlessRenderer>(renderer: &R, size: (u32, u32)) -> Self {
         println!("TextureRgba8Color: new");
         let desc = wgpu::TextureDescriptor {
@@ -27,19 +41,62 @@ impl TextureRgba8Color {
         TextureRgba8Color { desc, tex }
     }
 
+    /// Get the TextureDescriptor for this texture.
     pub fn desc(&self) -> &wgpu::TextureDescriptor<'static> {
         &self.desc
     }
 
+    /// Get the WebGPU representation of this texture.
     pub fn tex(&self) -> &wgpu::Texture {
         &self.tex
     }
 
-    pub fn draw<R: LikeHeadlessRenderer, D: Drawable>(&self, renderer: &R, draw: D) {
-        draw.draw_color(renderer, self);
+    pub fn render<F, R: LikeHeadlessRenderer>(&self, renderer: &R, options: Rgba8ColorRenderPassOptions, rendering: F)
+    where
+        F: FnOnce(&mut Rgba8ColorRenderPass<R>),
+    {
+        let mut encoder =
+            renderer
+                .device()
+                .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                    label: Some("mallard_color_pass"),
+                });
+
+        let texture_view = self
+            .tex
+            .create_view(&wgpu::TextureViewDescriptor::default());
+
+        let render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
+                attachment: &texture_view,
+                resolve_target: None,
+                ops: wgpu::Operations {
+                    load: match options {
+                        Rgba8ColorRenderPassOptions::DontClear => wgpu::LoadOp::Load,
+                        Rgba8ColorRenderPassOptions::Clear(color) => wgpu::LoadOp::Clear(wgpu::Color {
+                            r: color[0],
+                            g: color[1],
+                            b: color[2],
+                            a: color[3],
+                        }),
+                    },
+                    store: true,
+                },
+            }],
+            depth_stencil_attachment: None,
+        });
+
+        rendering(&mut Rgba8ColorRenderPass {
+            renderer,
+            render_pass,
+            render_target: &self,
+        });
+
+        let command_buffer = encoder.finish();
+        renderer.queue().submit(std::iter::once(command_buffer));
     }
 
-    // TODO: this should be moved to a data texture type
+    /// Make a new RGBA8 color texture containing white noise.
     pub async fn new_from_white_noise<R: LikeHeadlessRenderer>(
         renderer: &R,
         size: (u32, u32),
@@ -58,7 +115,7 @@ impl TextureRgba8Color {
         Self::new_from_rgba(renderer, size, &data).await
     }
 
-    // TODO: this should be moved to a Texture type
+    /// Make a new RGBA8 color texture containing the specified color data.
     pub async fn new_from_rgba<R: LikeHeadlessRenderer>(
         renderer: &R,
         size: (u32, u32),
@@ -104,6 +161,7 @@ impl TextureRgba8Color {
         result
     }
 
+    /// Get the RGBA8 color data out of this texture.
     pub async fn to_rgba8<R: LikeHeadlessRenderer>(&self, renderer: &R) -> Vec<u8> {
         let destination = Rgba8Buffer::new_destination_for_image(
             renderer,
@@ -144,6 +202,7 @@ impl TextureRgba8Color {
         result
     }
 
+    /// Save this texture to disk (as a .png, etc, based on file name).
     pub async fn save<R: LikeHeadlessRenderer>(&self, renderer: &R, path: &str) {
         let rgba_data = self.to_rgba8(renderer).await;
         image::save_buffer(path, &rgba_data, 512, 512, image::ColorType::Rgba8).unwrap();

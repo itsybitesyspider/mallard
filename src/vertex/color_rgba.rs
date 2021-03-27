@@ -1,4 +1,3 @@
-
 #[repr(C)]
-#[derive(Copy,Clone,Debug)]
-pub struct ColorRgba([f32;4]);
+#[derive(Copy, Clone, Debug)]
+pub struct ColorRgba([f32; 4]);

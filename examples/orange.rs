@@ -8,6 +8,6 @@ fn main() {
 async fn orange() {
     let renderer = HeadlessRenderer::new().await;
     let texture = TextureRgba8Color::new(&renderer, (512, 512));
-    texture.draw(&renderer, Clear { color: [1.0,0.6,0.2,1.0] });
+    texture.render(&renderer, Rgba8ColorRenderPassOptions::Clear([1.0,0.4,0.1,1.0]), |_pass| {});
     texture.save(&renderer, "orange.png").await;
 }
